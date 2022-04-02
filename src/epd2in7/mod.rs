@@ -88,7 +88,7 @@ where
 
       // power on
       self.command(spi, Command::PowerOn)?;
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
 
       // set panel settings, 0xbf is bw, 0xaf is multi-color
       self.interface
@@ -143,12 +143,12 @@ where
   }
 
   fn sleep(&mut self, spi: &mut SPI, _delay: &mut DELAY) -> Result<(), SPI::Error> {
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
       self.interface
           .cmd_with_data(spi, Command::VcomAndDataIntervalSetting, &[0xf7])?;
 
       self.command(spi, Command::PowerOff)?;
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
       self.interface
           .cmd_with_data(spi, Command::DeepSleep, &[0xA5])?;
       Ok(())
@@ -193,19 +193,19 @@ where
       self.send_data(spi, &[(width & 0xf8) as u8])?;
       self.send_data(spi, &[(height >> 8) as u8])?;
       self.send_data(spi, &[(height & 0xff) as u8])?;
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
 
       self.send_data(spi, buffer)?;
 
       self.interface.cmd(spi, Command::DisplayRefresh)?;
 
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
       Ok(())
   }
 
   fn display_frame(&mut self, spi: &mut SPI, _delay: &mut DELAY) -> Result<(), SPI::Error> {
       self.command(spi, Command::DisplayRefresh)?;
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
       Ok(())
   }
 
@@ -305,8 +305,10 @@ where
       self.interface.cmd_with_data(spi, command, data)
   }
 
-  fn wait_until_idle(&mut self) {
+  fn wait_until_idle(&mut self, spi: &mut SPI,) -> Result<(), SPI::Error> {
+      self.command(spi, Command::GetStatus)?;
       let _ = self.interface.wait_until_idle(IS_BUSY_LOW);
+      Ok(())
   }
 
   /// Refresh display for partial frame
@@ -327,7 +329,7 @@ where
       self.send_data(spi, &[(width & 0xf8) as u8])?;
       self.send_data(spi, &[(height >> 8) as u8])?;
       self.send_data(spi, &[(height & 0xff) as u8])?;
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
       Ok(())
   }
 
@@ -351,7 +353,7 @@ where
       self.send_data(spi, &[(width & 0xf8) as u8])?;
       self.send_data(spi, &[(height >> 8) as u8])?;
       self.send_data(spi, &[(height & 0xff) as u8])?;
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
 
       for b in achromatic.iter() {
           // Flipping based on waveshare implementation
@@ -381,7 +383,7 @@ where
       self.send_data(spi, &[(width & 0xf8) as u8])?;
       self.send_data(spi, &[(height >> 8) as u8])?;
       self.send_data(spi, &[(height & 0xff) as u8])?;
-      self.wait_until_idle();
+      self.wait_until_idle(spi)?;
 
       for b in chromatic.iter() {
           // Flipping based on waveshare implementation
