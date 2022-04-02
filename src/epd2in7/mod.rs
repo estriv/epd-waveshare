@@ -32,7 +32,7 @@ use self::command::Command;
 #[cfg(feature = "graphics")]
 mod graphics;
 #[cfg(feature = "graphics")]
-pub use self::graphics::Display2in7b;
+pub use self::graphics::Display2in7;
 
 /// Epd2in7 driver
 pub struct Epd2in7<SPI, CS, BUSY, DC, RST, DELAY> {

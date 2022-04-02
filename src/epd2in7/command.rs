@@ -1,7 +1,7 @@
 //! SPI Commands for the Waveshare 2.7" B 3 color E-Ink Display
 use crate::traits;
 
-/// EPD2IN7B commands
+/// EPD2IN7 commands
 ///
 /// More information can be found in the [specification](https://www.waveshare.com/w/upload/d/d8/2.7inch-e-paper-b-specification.pdf)
 #[allow(dead_code)]
