@@ -56,19 +56,6 @@ where
       // reset the device
       self.interface.reset(delay, 2);
 
-      // power on
-      self.command(spi, Command::PowerOn)?;
-      delay.delay_ms(5);
-      self.wait_until_idle();
-
-      // set panel settings, 0xbf is bw, 0xaf is multi-color
-      self.interface
-          .cmd_with_data(spi, Command::PanelSetting, &[0xaf])?;
-
-      // pll control
-      self.interface
-          .cmd_with_data(spi, Command::PllControl, &[0x3a])?;
-
       // set the power settings
       self.interface.cmd_with_data(
           spi,
@@ -90,13 +77,33 @@ where
       self.interface
           .cmd_with_data(spi, Command::PowerOptimization, &[0x93, 0x2a])?;
       self.interface
+          .cmd_with_data(spi, Command::PowerOptimization, &[0xA0, 0xA5])?;
+      self.interface
+          .cmd_with_data(spi, Command::PowerOptimization, &[0xA1, 0x00])?;
+      self.interface
           .cmd_with_data(spi, Command::PowerOptimization, &[0x73, 0x41])?;
+
+      self.interface
+          .cmd_with_data(spi, Command::PartialDisplayRefresh, &[0x00])?;
+
+      // power on
+      self.command(spi, Command::PowerOn)?;
+      delay.delay_ms(5);
+      self.wait_until_idle();
+
+      // set panel settings, 0xbf is bw, 0xaf is multi-color
+      self.interface
+          .cmd_with_data(spi, Command::PanelSetting, &[0xaf])?;
+
+      // pll control
+      self.interface
+          .cmd_with_data(spi, Command::PllControl, &[0x3a])?;
 
       self.interface
           .cmd_with_data(spi, Command::VcmDcSetting, &[0x12])?;
 
-      self.interface
-          .cmd_with_data(spi, Command::VcomAndDataIntervalSetting, &[0x87])?;
+      // self.interface
+      //     .cmd_with_data(spi, Command::VcomAndDataIntervalSetting, &[0x87])?;
 
       self.set_lut(spi, None)?;
 
