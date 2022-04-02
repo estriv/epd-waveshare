@@ -169,7 +169,7 @@ where
       self.interface.cmd(spi, Command::DataStartTransmission2)?;
       self.send_data(spi, buffer)?;
 
-      self.interface.cmd(spi, Command::DataStop)?;
+      self.interface.cmd(spi, Command::DisplayRefresh)?;
       self.wait_until_idle();
       Ok(())
   }
