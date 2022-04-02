@@ -88,7 +88,6 @@ where
 
       // power on
       self.command(spi, Command::PowerOn)?;
-      delay.delay_ms(100);
       self.wait_until_idle();
 
       // set panel settings, 0xbf is bw, 0xaf is multi-color
@@ -260,8 +259,8 @@ where
       self.cmd_with_data(spi, Command::LutForVcom, &LUT_VCOM_DC)?;
       self.cmd_with_data(spi, Command::LutWhiteToWhite, &LUT_WW)?;
       self.cmd_with_data(spi, Command::LutBlackToWhite, &LUT_BW)?;
-      self.cmd_with_data(spi, Command::LutWhiteToBlack, &LUT_WB)?;
-      self.cmd_with_data(spi, Command::LutBlackToBlack, &LUT_BB)?;
+      self.cmd_with_data(spi, Command::LutWhiteToBlack, &LUT_BB)?;
+      self.cmd_with_data(spi, Command::LutBlackToBlack, &LUT_WB)?;
 
       Ok(())
   }
