@@ -160,10 +160,6 @@ where
       buffer: &[u8],
       _delay: &mut DELAY,
   ) -> Result<(), SPI::Error> {
-      // self.interface.cmd(spi, Command::DataStartTransmission1)?;
-      // self.interface
-      //     .data_x_times(spi, !self.color.get_byte_value(), WIDTH * HEIGHT / 8)?;
-
       self.interface.cmd_with_data(spi, Command::DataStartTransmission2, buffer)?;
       Ok(())
   }
@@ -188,7 +184,6 @@ where
       self.interface.data(spi, &[(width & 0xf8) as u8])?;
       self.interface.data(spi, &[(height >> 8) as u8])?;
       self.interface.data(spi, &[(height & 0xff) as u8])?;
-      self.wait_until_idle(spi)?;
 
       self.interface.data(spi, buffer)?;
 
