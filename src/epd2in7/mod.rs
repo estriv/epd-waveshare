@@ -87,7 +87,7 @@ where
           .cmd_with_data(spi, Command::PartialDisplayRefresh, &[0x00])?;
 
       // power on
-      self.command(spi, Command::PowerOn)?;
+      self.interface.cmd(spi, Command::PowerOn)?;
       self.wait_until_idle(spi)?;
 
       // set panel settings, 0xbf is bw, 0xaf is multi-color
@@ -147,7 +147,7 @@ where
       self.interface
           .cmd_with_data(spi, Command::VcomAndDataIntervalSetting, &[0xf7])?;
 
-      self.command(spi, Command::PowerOff)?;
+      self.interface.cmd(spi, Command::PowerOff)?;
       self.wait_until_idle(spi)?;
       self.interface
           .cmd_with_data(spi, Command::DeepSleep, &[0xA5])?;
@@ -180,17 +180,17 @@ where
       self.interface
           .cmd(spi, Command::PartialDataStartTransmission1)?;
 
-      self.send_data(spi, &[(x >> 8) as u8])?;
-      self.send_data(spi, &[(x & 0xf8) as u8])?;
-      self.send_data(spi, &[(y >> 8) as u8])?;
-      self.send_data(spi, &[(y & 0xff) as u8])?;
-      self.send_data(spi, &[(width >> 8) as u8])?;
-      self.send_data(spi, &[(width & 0xf8) as u8])?;
-      self.send_data(spi, &[(height >> 8) as u8])?;
-      self.send_data(spi, &[(height & 0xff) as u8])?;
+      self.interface.data(spi, &[(x >> 8) as u8])?;
+      self.interface.data(spi, &[(x & 0xf8) as u8])?;
+      self.interface.data(spi, &[(y >> 8) as u8])?;
+      self.interface.data(spi, &[(y & 0xff) as u8])?;
+      self.interface.data(spi, &[(width >> 8) as u8])?;
+      self.interface.data(spi, &[(width & 0xf8) as u8])?;
+      self.interface.data(spi, &[(height >> 8) as u8])?;
+      self.interface.data(spi, &[(height & 0xff) as u8])?;
       self.wait_until_idle(spi)?;
 
-      self.send_data(spi, buffer)?;
+      self.interface.data(spi, buffer)?;
 
       self.interface.cmd(spi, Command::DisplayRefresh)?;
 
@@ -199,7 +199,7 @@ where
   }
 
   fn display_frame(&mut self, spi: &mut SPI, _delay: &mut DELAY) -> Result<(), SPI::Error> {
-      self.command(spi, Command::DisplayRefresh)?;
+      self.interface.cmd(spi, Command::DisplayRefresh)?;
       self.wait_until_idle(spi)?;
       Ok(())
   }
@@ -211,7 +211,7 @@ where
       delay: &mut DELAY,
   ) -> Result<(), SPI::Error> {
       self.update_frame(spi, buffer, delay)?;
-      self.command(spi, Command::DisplayRefresh)?;
+      self.display_frame(spi, delay)?;
       Ok(())
   }
 
@@ -251,11 +251,11 @@ where
       spi: &mut SPI,
       _refresh_rate: Option<RefreshLut>,
   ) -> Result<(), SPI::Error> {
-      self.cmd_with_data(spi, Command::LutForVcom, &LUT_VCOM_DC)?;
-      self.cmd_with_data(spi, Command::LutWhiteToWhite, &LUT_WW)?;
-      self.cmd_with_data(spi, Command::LutBlackToWhite, &LUT_BW)?;
-      self.cmd_with_data(spi, Command::LutWhiteToBlack, &LUT_BB)?;
-      self.cmd_with_data(spi, Command::LutBlackToBlack, &LUT_WB)?;
+      self.interface.cmd_with_data(spi, Command::LutForVcom, &LUT_VCOM_DC)?;
+      self.interface.cmd_with_data(spi, Command::LutWhiteToWhite, &LUT_WW)?;
+      self.interface.cmd_with_data(spi, Command::LutBlackToWhite, &LUT_BW)?;
+      self.interface.cmd_with_data(spi, Command::LutWhiteToBlack, &LUT_BB)?;
+      self.interface.cmd_with_data(spi, Command::LutBlackToBlack, &LUT_WB)?;
 
       Ok(())
   }
@@ -274,34 +274,8 @@ where
   RST: OutputPin,
   DELAY: DelayMs<u8>,
 {
-  fn command(&mut self, spi: &mut SPI, command: Command) -> Result<(), SPI::Error> {
-      self.interface.cmd(spi, command)
-  }
-
-  fn send_data(&mut self, spi: &mut SPI, data: &[u8]) -> Result<(), SPI::Error> {
-      self.interface.data(spi, data)
-  }
-
-  fn send_buffer_helper(&mut self, spi: &mut SPI, buffer: &[u8]) -> Result<(), SPI::Error> {
-      // Based on the waveshare implementation, all data for color values is flipped. This helper
-      // method makes that transmission easier
-      for b in buffer.iter() {
-          self.send_data(spi, &[!b])?;
-      }
-      Ok(())
-  }
-
-  fn cmd_with_data(
-      &mut self,
-      spi: &mut SPI,
-      command: Command,
-      data: &[u8],
-  ) -> Result<(), SPI::Error> {
-      self.interface.cmd_with_data(spi, command, data)
-  }
-
   fn wait_until_idle(&mut self, spi: &mut SPI,) -> Result<(), SPI::Error> {
-      self.command(spi, Command::GetStatus)?;
+      self.interface.cmd(spi, Command::GetStatus)?;
       let _ = self.interface.wait_until_idle(IS_BUSY_LOW);
       Ok(())
   }
@@ -315,15 +289,15 @@ where
       width: u32,
       height: u32,
   ) -> Result<(), SPI::Error> {
-      self.command(spi, Command::PartialDisplayRefresh)?;
-      self.send_data(spi, &[(x >> 8) as u8])?;
-      self.send_data(spi, &[(x & 0xf8) as u8])?;
-      self.send_data(spi, &[(y >> 8) as u8])?;
-      self.send_data(spi, &[(y & 0xff) as u8])?;
-      self.send_data(spi, &[(width >> 8) as u8])?;
-      self.send_data(spi, &[(width & 0xf8) as u8])?;
-      self.send_data(spi, &[(height >> 8) as u8])?;
-      self.send_data(spi, &[(height & 0xff) as u8])?;
+      self.interface.cmd(spi, Command::PartialDisplayRefresh)?;
+      self.interface.data(spi, &[(x >> 8) as u8])?;
+      self.interface.data(spi, &[(x & 0xf8) as u8])?;
+      self.interface.data(spi, &[(y >> 8) as u8])?;
+      self.interface.data(spi, &[(y & 0xff) as u8])?;
+      self.interface.data(spi, &[(width >> 8) as u8])?;
+      self.interface.data(spi, &[(width & 0xf8) as u8])?;
+      self.interface.data(spi, &[(height >> 8) as u8])?;
+      self.interface.data(spi, &[(height & 0xff) as u8])?;
       self.wait_until_idle(spi)?;
       Ok(())
   }
