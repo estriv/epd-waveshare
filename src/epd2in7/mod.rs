@@ -270,7 +270,7 @@ where
   DELAY: DelayMs<u8>,
 {
   fn wait_until_idle(&mut self, spi: &mut SPI,) -> Result<(), SPI::Error> {
-      self.interface.cmd(spi, Command::GetStatus)?;
+      // self.interface.cmd(spi, Command::GetStatus)?;
       let _ = self.interface.wait_until_idle(IS_BUSY_LOW);
       Ok(())
   }
