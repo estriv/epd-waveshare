@@ -2,6 +2,8 @@
 //!
 //! [Documentation](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT_(B))
 
+use std::println;
+
 use embedded_hal::{
   blocking::{delay::*, spi::Write},
   digital::v2::*,
@@ -222,7 +224,6 @@ where
   }
 
   fn clear_frame(&mut self, spi: &mut SPI, _delay: &mut DELAY) -> Result<(), SPI::Error> {
-
       let color_value = self.color.get_byte_value();
       self.interface.cmd(spi, Command::DataStartTransmission1)?;
       self.interface
