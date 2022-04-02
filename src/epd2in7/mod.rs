@@ -164,12 +164,7 @@ where
       // self.interface
       //     .data_x_times(spi, !self.color.get_byte_value(), WIDTH * HEIGHT / 8)?;
 
-      // self.interface.cmd_with_data(spi, Command::DataStartTransmission2, buffer)?;
-      self.interface.cmd(spi, Command::DataStartTransmission1)?;
-      self.send_buffer_helper(spi, buffer)?;
-
-      self.interface.cmd(spi, Command::DataStartTransmission2)?;
-      self.send_buffer_helper(spi, buffer)?;
+      self.interface.cmd_with_data(spi, Command::DataStartTransmission2, buffer)?;
       Ok(())
   }
 
@@ -330,66 +325,6 @@ where
       self.send_data(spi, &[(height >> 8) as u8])?;
       self.send_data(spi, &[(height & 0xff) as u8])?;
       self.wait_until_idle(spi)?;
-      Ok(())
-  }
-
-  /// Update black/achromatic frame
-  pub fn update_partial_achromatic_frame(
-      &mut self,
-      spi: &mut SPI,
-      achromatic: &[u8],
-      x: u32,
-      y: u32,
-      width: u32,
-      height: u32,
-  ) -> Result<(), SPI::Error> {
-      self.interface
-          .cmd(spi, Command::PartialDataStartTransmission1)?;
-      self.send_data(spi, &[(x >> 8) as u8])?;
-      self.send_data(spi, &[(x & 0xf8) as u8])?;
-      self.send_data(spi, &[(y >> 8) as u8])?;
-      self.send_data(spi, &[(y & 0xff) as u8])?;
-      self.send_data(spi, &[(width >> 8) as u8])?;
-      self.send_data(spi, &[(width & 0xf8) as u8])?;
-      self.send_data(spi, &[(height >> 8) as u8])?;
-      self.send_data(spi, &[(height & 0xff) as u8])?;
-      self.wait_until_idle(spi)?;
-
-      for b in achromatic.iter() {
-          // Flipping based on waveshare implementation
-          self.send_data(spi, &[!b])?;
-      }
-
-      Ok(())
-  }
-
-  /// Update partial chromatic/red frame
-  pub fn update_partial_chromatic_frame(
-      &mut self,
-      spi: &mut SPI,
-      chromatic: &[u8],
-      x: u32,
-      y: u32,
-      width: u32,
-      height: u32,
-  ) -> Result<(), SPI::Error> {
-      self.interface
-          .cmd(spi, Command::PartialDataStartTransmission2)?;
-      self.send_data(spi, &[(x >> 8) as u8])?;
-      self.send_data(spi, &[(x & 0xf8) as u8])?;
-      self.send_data(spi, &[(y >> 8) as u8])?;
-      self.send_data(spi, &[(y & 0xff) as u8])?;
-      self.send_data(spi, &[(width >> 8) as u8])?;
-      self.send_data(spi, &[(width & 0xf8) as u8])?;
-      self.send_data(spi, &[(height >> 8) as u8])?;
-      self.send_data(spi, &[(height & 0xff) as u8])?;
-      self.wait_until_idle(spi)?;
-
-      for b in chromatic.iter() {
-          // Flipping based on waveshare implementation
-          self.send_data(spi, &[!b])?;
-      }
-
       Ok(())
   }
 }
