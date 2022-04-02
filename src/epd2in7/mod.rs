@@ -169,12 +169,11 @@ where
       self.interface.cmd(spi, Command::DataStartTransmission1)?;
       self.send_buffer_helper(spi, buffer)?;
       self.interface
-          .data(spi, buffer)?;
+          .data_x_times(spi, !self.color.get_byte_value(), WIDTH * HEIGHT / 8)?;
 
       // Clear chromatic layer since we won't be using it here
       self.interface.cmd(spi, Command::DataStartTransmission2)?;
-      self.interface
-          .data_x_times(spi, !self.color.get_byte_value(), WIDTH * HEIGHT / 8)?;
+      self.send_data(spi, buffer)?;
 
       self.interface.cmd(spi, Command::DataStop)?;
       Ok(())
