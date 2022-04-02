@@ -279,60 +279,6 @@ where
   }
 }
 
-impl<SPI, CS, BUSY, DC, RST, DELAY> WaveshareThreeColorDisplay<SPI, CS, BUSY, DC, RST, DELAY>
-  for Epd2in7<SPI, CS, BUSY, DC, RST, DELAY>
-where
-  SPI: Write<u8>,
-  CS: OutputPin,
-  BUSY: InputPin,
-  DC: OutputPin,
-  RST: OutputPin,
-  DELAY: DelayMs<u8>,
-{
-  fn update_color_frame(
-      &mut self,
-      spi: &mut SPI,
-      black: &[u8],
-      chromatic: &[u8],
-  ) -> Result<(), SPI::Error> {
-      self.update_achromatic_frame(spi, black)?;
-      self.update_chromatic_frame(spi, chromatic)
-  }
-
-  /// Update only the black/white data of the display.
-  ///
-  /// Finish by calling `update_chromatic_frame`.
-  fn update_achromatic_frame(
-      &mut self,
-      spi: &mut SPI,
-      achromatic: &[u8],
-  ) -> Result<(), SPI::Error> {
-      self.interface.cmd(spi, Command::DataStartTransmission1)?;
-
-      self.send_buffer_helper(spi, achromatic)?;
-
-      self.interface.cmd(spi, Command::DataStop)
-  }
-
-  /// Update only chromatic data of the display.
-  ///
-  /// This data takes precedence over the black/white data.
-  fn update_chromatic_frame(
-      &mut self,
-      spi: &mut SPI,
-      chromatic: &[u8],
-  ) -> Result<(), SPI::Error> {
-      self.interface.cmd(spi, Command::DataStartTransmission2)?;
-
-      self.send_buffer_helper(spi, chromatic)?;
-
-      self.interface.cmd(spi, Command::DataStop)?;
-      self.wait_until_idle();
-
-      Ok(())
-  }
-}
-
 impl<SPI, CS, BUSY, DC, RST, DELAY> Epd2in7<SPI, CS, BUSY, DC, RST, DELAY>
 where
   SPI: Write<u8>,
