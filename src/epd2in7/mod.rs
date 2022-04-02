@@ -9,7 +9,7 @@ use embedded_hal::{
 
 use crate::interface::DisplayInterface;
 use crate::traits::{
-  InternalWiAdditions, RefreshLut, WaveshareDisplay, WaveshareThreeColorDisplay,
+  InternalWiAdditions, RefreshLut, WaveshareDisplay,
 };
 
 // The Lookup Tables for the Display
@@ -88,7 +88,7 @@ where
 
       // power on
       self.command(spi, Command::PowerOn)?;
-      delay.delay_ms(5);
+      delay.delay_ms(100);
       self.wait_until_idle();
 
       // set panel settings, 0xbf is bw, 0xaf is multi-color
@@ -106,11 +106,6 @@ where
       //     .cmd_with_data(spi, Command::VcomAndDataIntervalSetting, &[0x87])?;
 
       self.set_lut(spi, None)?;
-
-      self.interface
-          .cmd_with_data(spi, Command::PartialDisplayRefresh, &[0x00])?;
-
-      self.wait_until_idle();
       Ok(())
   }
 }
@@ -265,12 +260,12 @@ where
       spi: &mut SPI,
       _refresh_rate: Option<RefreshLut>,
   ) -> Result<(), SPI::Error> {
-      self.wait_until_idle();
       self.cmd_with_data(spi, Command::LutForVcom, &LUT_VCOM_DC)?;
       self.cmd_with_data(spi, Command::LutWhiteToWhite, &LUT_WW)?;
       self.cmd_with_data(spi, Command::LutBlackToWhite, &LUT_BW)?;
       self.cmd_with_data(spi, Command::LutWhiteToBlack, &LUT_WB)?;
       self.cmd_with_data(spi, Command::LutBlackToBlack, &LUT_BB)?;
+
       Ok(())
   }
 
