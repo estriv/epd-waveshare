@@ -166,16 +166,16 @@ where
       buffer: &[u8],
       _delay: &mut DELAY,
   ) -> Result<(), SPI::Error> {
-      self.interface.cmd(spi, Command::DataStartTransmission1)?;
-      self.send_buffer_helper(spi, buffer)?;
-      self.interface
-          .data_x_times(spi, !self.color.get_byte_value(), WIDTH * HEIGHT / 8)?;
+      // self.interface.cmd(spi, Command::DataStartTransmission1)?;
+      // self.interface
+      //     .data_x_times(spi, !self.color.get_byte_value(), WIDTH * HEIGHT / 8)?;
 
       // Clear chromatic layer since we won't be using it here
       self.interface.cmd(spi, Command::DataStartTransmission2)?;
       self.send_data(spi, buffer)?;
 
       self.interface.cmd(spi, Command::DataStop)?;
+      self.wait_until_idle();
       Ok(())
   }
 
@@ -201,9 +201,12 @@ where
       self.send_data(spi, &[(height & 0xff) as u8])?;
       self.wait_until_idle();
 
-      self.send_buffer_helper(spi, buffer)?;
+      self.send_data(spi, buffer)?;
 
-      self.interface.cmd(spi, Command::DataStop)
+      self.interface.cmd(spi, Command::DataStop)?;
+
+      self.wait_until_idle();
+      Ok(())
   }
 
   fn display_frame(&mut self, spi: &mut SPI, _delay: &mut DELAY) -> Result<(), SPI::Error> {
