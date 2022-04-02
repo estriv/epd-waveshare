@@ -165,9 +165,7 @@ where
       // self.interface
       //     .data_x_times(spi, !self.color.get_byte_value(), WIDTH * HEIGHT / 8)?;
 
-      // Clear chromatic layer since we won't be using it here
-      self.interface.cmd(spi, Command::DataStartTransmission2)?;
-      self.send_data(spi, buffer)?;
+      self.interface.cmd_with_data(spi, Command::DataStartTransmission2, buffer)?;
 
       self.interface.cmd(spi, Command::DisplayRefresh)?;
       self.wait_until_idle();
