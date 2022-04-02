@@ -2,8 +2,6 @@
 //!
 //! [Documentation](https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT_(B))
 
-use std::println;
-
 use embedded_hal::{
   blocking::{delay::*, spi::Write},
   digital::v2::*,
