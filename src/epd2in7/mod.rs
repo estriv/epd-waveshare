@@ -168,6 +168,8 @@ where
   ) -> Result<(), SPI::Error> {
       self.interface.cmd(spi, Command::DataStartTransmission1)?;
       self.send_buffer_helper(spi, buffer)?;
+      self.interface
+          .data(spi, buffer)?;
 
       // Clear chromatic layer since we won't be using it here
       self.interface.cmd(spi, Command::DataStartTransmission2)?;
@@ -223,19 +225,20 @@ where
   }
 
   fn clear_frame(&mut self, spi: &mut SPI, _delay: &mut DELAY) -> Result<(), SPI::Error> {
-      self.wait_until_idle();
 
       let color_value = self.color.get_byte_value();
       self.interface.cmd(spi, Command::DataStartTransmission1)?;
       self.interface
           .data_x_times(spi, color_value, WIDTH * HEIGHT / 8)?;
 
-      self.interface.cmd(spi, Command::DataStop)?;
+      // self.interface.cmd(spi, Command::DataStop)?;
 
       self.interface.cmd(spi, Command::DataStartTransmission2)?;
       self.interface
           .data_x_times(spi, color_value, WIDTH * HEIGHT / 8)?;
-      self.interface.cmd(spi, Command::DataStop)?;
+      // self.interface.cmd(spi, Command::DataStop)?;
+      self.interface.cmd(spi, Command::DisplayRefresh)?;
+      self.wait_until_idle();
       Ok(())
   }
 
